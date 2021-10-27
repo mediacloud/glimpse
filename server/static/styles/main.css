@@ -1,0 +1,39 @@
+:root {
+  --font-families: Lato, Helvetica, sans;
+  --primary-color: rgb(92,72,58);
+  --secondary-color: rgb(241,233,187);
+  --grey-background: rgb(200,200,200);
+}
+
+body {
+  font-family: var(--font-families);
+  font-size: 14px;
+  color: var(--primary-color);
+  margin: 0px;
+  padding: 0px;
+  background-color: var(--grey-background);
+}
+
+a {
+}
+
+p {
+  font-family: var(--font-families);
+}
+
+h1 {
+  padding-top: 40px;
+  font-weight: 800;
+  margin-top: 0px;
+}
+
+h2 {
+  padding-bottom: 20px;
+  margin-bottom: 0px;
+}
+
+footer {
+  background-color: var(--grey-background);
+  text-align: center;
+  border-top: 1px solid rgb(100, 100, 100);
+}

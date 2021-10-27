@@ -76,7 +76,7 @@ function renderSample(destinationId, data) {
     </tr>
   `);
   for(idx in rows){
-    tableContent += row[idx];
+    tableContent += rows[idx];
   }
   tableContent += "</table>";
 

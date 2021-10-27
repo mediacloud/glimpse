@@ -8,10 +8,10 @@ from server.platforms.provider import ContentProvider, MC_DATE_FORMAT
 from server.util.cache import cache
 from server.util.dates import unix_to_solr_date
 
-PS_REDDIT_SEARCH_URL = 'https://api.pushshift.io/reddit/search/submission/'
+REDDIT_PUSHSHIFT_URL = "https://beta.pushshift.io"
+SUBMISSION_SEARCH_URL = "{}/reddit/search/submissions".format(REDDIT_PUSHSHIFT_URL)
 
-NEWS_SUBREDDITS = ['politics', 'worldnews', 'news', 'conspiracy', 'Libertarian', 'TrueReddit', 'Conservative',
-                   'offbeat']
+NEWS_SUBREDDITS = ['politics', 'worldnews', 'news', 'conspiracy', 'Libertarian', 'TrueReddit', 'Conservative', 'offbeat']
 
 
 class RedditPushshiftProvider(ContentProvider):
@@ -23,16 +23,16 @@ class RedditPushshiftProvider(ContentProvider):
     def sample(self, query: str, start_date: dt.datetime, end_date: dt.datetime, limit: int = 20, **kwargs) -> List[Dict]:
         """
         Return a list of top submissions matching the query.
-        :param start_date: 
+        :param query:
+        :param start_date:
         :param end_date:
         :param limit:
         :param kwargs: Options: 'subreddits': List[str]
         :return:
         """
-        subreddits = kwargs['subreddits'] if 'subreddits' in kwargs else []
-        data = self._cached_submission_search(q=query, subreddits=subreddits,
+        data = self._cached_submission_search(q=query,
                                               start_date=start_date, end_date=end_date,
-                                              limit=limit, sort='desc', sort_type='score')
+                                              limit=limit,  sort='score', order='desc', **kwargs)
         cleaned_data = [self._submission_to_row(item) for item in data['data'][:limit]]
         return cleaned_data
 
@@ -45,14 +45,10 @@ class RedditPushshiftProvider(ContentProvider):
         :param kwargs: Options: 'subreddits': List[str]
         :return:
         """
-        subreddits = kwargs['subreddits'] if 'subreddits' in kwargs else []
-        data = self._cached_submission_search(q=query, subreddits=subreddits,
+        data = self._cached_submission_search(q=query,
                                               start_date=start_date, end_date=end_date,
-                                              aggs='created_utc', frequency='1y', size=0)
-        if len(data['aggs']['created_utc']) == 0:
-            return 0
-        counts = [r['doc_count'] for r in data['aggs']['created_utc']]
-        return sum(counts)
+                                              limit=0, track_total_hits=True, **kwargs)
+        return data['metadata']['es']['hits']['total']['value']
 
     def count_over_time(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> Dict:
         """
@@ -63,24 +59,23 @@ class RedditPushshiftProvider(ContentProvider):
         :param kwargs: Options: 'subreddits': List[str], period: str (default '1d')
         :return:
         """
-        subreddits = kwargs['subreddits'] if 'subreddits' in kwargs else []
         period = kwargs['period'] if 'period' in kwargs else '1d'
-        data = self._cached_submission_search(q=query, subreddits=subreddits,
+        data = self._cached_submission_search(q=query,
                                               start_date=start_date, end_date=end_date,
-                                              aggs='created_utc', frequency=period, size=0)
+                                              calendar_histogram='day')
         # make the results match the format we use for stories/count in the Media Cloud API
         results = []
-        for d in data['aggs']['created_utc']:
+        for d in data['metadata']['es']['aggregations']['calendar_histogram']['buckets']:
             results.append({
-                'date': dt.datetime.fromtimestamp(d['key']).strftime(MC_DATE_FORMAT),
-                'timestamp': d['key'],
+                'date': dt.datetime.fromtimestamp(d['key']/1000).strftime(MC_DATE_FORMAT),
+                'timestamp': d['key']/1000,
                 'count': d['doc_count'],
             })
         return {'counts': results}
 
-    #@cache.cache_on_arguments()
+    @cache.cache_on_arguments()
     def _cached_submission_search(self, query: str = None, start_date: dt.datetime = None, end_date: dt.datetime = None,
-                                  subreddits: List[str] = None, **kwargs) -> Dict:
+                                  **kwargs) -> Dict:
         """
         Run a generic query against Pushshift.io to retrieve Reddit data
         :param start_date:
@@ -94,14 +89,14 @@ class RedditPushshiftProvider(ContentProvider):
         params = defaultdict()
         if query is not None:
             params['q'] = query
-        if subreddits is not None:
-            params['subreddit'] = ",".join(subreddits)
+        if 'subreddits' in kwargs:
+            params['subreddit'] = ",".join(kwargs['subreddits'])
         if (start_date is not None) and (end_date is not None):
-            params['after'] = unix_to_solr_date(int(start_date.timestamp()))
-            params['before'] = unix_to_solr_date(int(end_date.timestamp()))
+            params['since'] = int(start_date.timestamp())
+            params['until'] = int(end_date.timestamp())
         # and now add in any other arguments they have sent in
         params.update(kwargs)
-        r = requests.get(PS_REDDIT_SEARCH_URL, headers=headers, params=params)
+        r = requests.get(SUBMISSION_SEARCH_URL, headers=headers, params=params)
         # temp = r.url # useful assignment for debugging investigations
         return r.json()
 
@@ -114,12 +109,12 @@ class RedditPushshiftProvider(ContentProvider):
         """
         return {
             'media_name': '/r/{}'.format(item['subreddit']),
-            'media_url': item['full_link'],
-            'full_link': item['full_link'],
+            'media_url': 'https://reddit.com/r/{}'.format(item['subreddit']),
+            'url': 'https://reddit.com/'+item['permalink'],
             'stories_id': item['id'],
-            'title': item['title'],
+            'content': item['title'],
             'publish_date': dt.datetime.fromtimestamp(item['created_utc']).strftime(MC_DATE_FORMAT),
-            'url': item['url'],
+            'media_link': item['url'],
             'score': item['score'],
             'last_updated': dt.datetime.fromtimestamp(item['updated_utc']).strftime(MC_DATE_FORMAT) if 'updated_utc' in item else None,
             'author': item['author'],
@@ -133,19 +128,5 @@ class RedditPushshiftProvider(ContentProvider):
         :return:
         """
         return url.split('?')[0]
-
-    def url_submissions_by_sub(self, url: str) -> List[Dict]:
-        """
-        Extra helper to return submission counts by subreddit
-        :return:
-        """
-        data = self._cached_submission_search(url=self._sanitize_url_for_reddit(url), aggs='subreddit', size=0)
-        results = []
-        for d in data['aggs']['subreddit']:
-            results.append({
-                'name': d['key'],
-                'value': d['doc_count'],
-            })
-        return results
 
 

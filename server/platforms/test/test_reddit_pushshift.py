@@ -9,16 +9,9 @@ class RedditPushshiftProviderTest(unittest.TestCase):
     def setUp(self):
         self._provider = RedditPushshiftProvider()
 
-    def test_url_submissions_by_sub(self):
-        results = self._provider.url_submissions_by_sub("https://www.theguardian.com/")
-        assert isinstance(results, list) is True
-        assert 'name' in results[0]
-        assert 'value' in results[0]
-        assert results[0]['name'] == 'GUARDIANauto'  # automated reddit sub posting every story from Guardian
-
     def test_count(self):
         results = self._provider.count("Trump", dt.datetime.strptime("2019-01-01", "%Y-%m-%d"),
-                                       dt.datetime.strptime("2019-02-01", "%Y-%m-%d"))
+                                        dt.datetime.strptime("2019-02-01", "%Y-%m-%d"))
         assert results > 0
 
     def test_sample(self):

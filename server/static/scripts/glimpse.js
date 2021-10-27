@@ -2,7 +2,7 @@
 function submitSearch() {
   fetchAndRender('/api/count-over-time.json', 'results-count-over-time', renderCountOverTime);
   fetchAndRender('/api/count.json', 'results-count',
-    (destinationId, data) => document.getElementById(destinationId).innerHTML = `<h2>Total Matching</h2><p>${data}</p>`
+    (destinationId, data) => document.getElementById(destinationId).innerHTML = `<h2>Total Attention</h2><p>${data}</p>`
   );
   fetchAndRender('/api/sample.json', 'results-sample', renderSample);
 }
@@ -47,7 +47,7 @@ function renderCountOverTime(destinationId, data) {
       // render returns a promise to a DOM element containing the chart
       // viewElement.value contains the Vega View object instance
       const h2Element = document.createElement("h2");
-      const textNode = document.createTextNode("Matching Over Time");
+      const textNode = document.createTextNode("Attention Over Time");
       h2Element.appendChild(textNode);
       const destinationElement = document.getElementById(destinationId);
       destinationElement.appendChild(h2Element);
@@ -81,7 +81,7 @@ function renderSample(destinationId, data) {
   tableContent += "</table>";
 
   document.getElementById(destinationId).innerHTML = `
-    <h2>Sample Content</h2>
+    <h2>Content</h2>
     ${tableContent}
   `;
 }

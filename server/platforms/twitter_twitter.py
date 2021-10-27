@@ -22,7 +22,7 @@ class TwitterTwitterProvider(ContentProvider):
         Return a list of historical tweets matching the query.
         :param query:
         :param start_date:
-        :param end_date: 
+        :param end_date:
         :param limit:
         :param kwargs:
         :return:
@@ -38,6 +38,11 @@ class TwitterTwitterProvider(ContentProvider):
         }
         results = self._cached_query("tweets/search/all", params)
         return TwitterTwitterProvider._tweets_to_rows(results)
+
+    def count(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> int:
+        over_time = self.count_over_time(query, start_date, end_date, **kwargs)
+        total = sum([d['count'] for d in over_time['counts']])
+        return total
 
     def count_over_time(self, query: str, start_date: dt.datetime,
                         end_date: dt.datetime, #ignored
@@ -101,7 +106,7 @@ class TwitterTwitterProvider(ContentProvider):
             'media_name': 'Twitter',
             'media_url': 'https://twitter.com/{}'.format(item['author']['username']),
             'stories_id': item['id'],
-            'title': item['text'],
+            'content': item['text'],
             'publish_date': dateparser.parse(item['created_at']),
             'url': link,
             'last_updated': dateparser.parse(item['created_at']),
@@ -112,4 +117,3 @@ class TwitterTwitterProvider(ContentProvider):
             'like_count': item['public_metrics']['like_count'],
             'quote_count': item['public_metrics']['quote_count'],
         }
-

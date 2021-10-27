@@ -32,8 +32,26 @@ def _parse_query():
 
 @app.route('/api/count-over-time.json', methods=['POST'])
 @api_error_handler
-def api_count():
+def api_count_over_time():
     query = _parse_query()
     provider = platforms.provider_for(query['platform'], query['platform_source'])
     results = provider.count_over_time(query['terms'], query['start_date'], query['end_date'])
+    return jsonify(results)
+
+
+@app.route('/api/count.json', methods=['POST'])
+@api_error_handler
+def api_count():
+    query = _parse_query()
+    provider = platforms.provider_for(query['platform'], query['platform_source'])
+    results = provider.count(query['terms'], query['start_date'], query['end_date'])
+    return jsonify(results)
+
+
+@app.route('/api/sample.json', methods=['POST'])
+@api_error_handler
+def api_sample():
+    query = _parse_query()
+    provider = platforms.provider_for(query['platform'], query['platform_source'])
+    results = provider.sample(query['terms'], query['start_date'], query['end_date'], limit=50)
     return jsonify(results)

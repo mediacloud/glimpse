@@ -2,7 +2,6 @@
   --font-families: Lato, Helvetica, sans;
   --primary-color: rgb(92,72,58);
   --secondary-color: rgb(241,233,187);
-  --grey-background: rgb(200,200,200);
 }
 
 body {
@@ -11,7 +10,6 @@ body {
   color: var(--primary-color);
   margin: 0px;
   padding: 0px;
-  background-color: var(--grey-background);
 }
 
 a {
@@ -32,8 +30,10 @@ h2 {
   margin-bottom: 0px;
 }
 
+header {
+  padding-bottom: 30px;
+}
+
 footer {
-  background-color: var(--grey-background);
   text-align: center;
-  border-top: 1px solid rgb(100, 100, 100);
 }

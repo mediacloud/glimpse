@@ -18,7 +18,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vega-lite-api@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-tooltip"></script>
 
-  <title>Media Cloud - Glimpse</title>
+  <title>Glimpse</title>
 
   <link rel="stylesheet" href="{{  url_for('static', filename='styles/main.css') }}">
   <link rel="stylesheet" href="{{  url_for('static', filename='styles/search.css') }}">
@@ -27,65 +27,83 @@
 
 <body>
   <div id="app">
-    <div class="container">
 
       <header>
-        <div class="row">
-            <h1>Glimpse</h1>
+        <div class="container">
+          <div class="row">
+              <h1>Glimpse</h1>
+          </div>
         </div>
       </header>
 
-      <form onSubmit="event.preventDefault();submitSearch();" id="searchForm">
-        <div class="row">
-          <div class="col-md-12 mb-3">
-            <select class="form-select form-select-lg" id="platform">
-              {% for p in platforms %}
-                <option value="{{p}}">{{p}}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6 mb-3">
-              <div class="form-floating">
-                <textarea class="form-control" id="terms" style="height: 130px">robot</textarea>
-                <label for="terms">Search terms</label>
-              </div>
+      <div class="container searchWrapper">
+        <form onSubmit="event.preventDefault();submitSearch();" id="searchForm">
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <select class="form-select form-select-lg" id="platform">
+                {% for p in platforms %}
+                  <option value="{{p}}">{{p}}</option>
+                {% endfor %}
+              </select>
             </div>
-            <div class="col-md-6 mb-3">
-              <div class="form-floating  mb-3">
-                <input type="text" class="form-control" id="startDate" value="11-1-2020">
-                <label for="startDate">Start date</label>
-              </div>
-              <div class="form-floating">
-                <input type="text" class="form-control" id="endDate" value="11-1-2021">
-                <label for="endDate">End date</label>
-              </div>
-            </div>
-        </div>
-        <div class="row">
-          <div class="col-md-3 offset-md-9">
-            <button class="btn btn-primary" type="submit">Search</button>
           </div>
-        </div>
-      </form>
+          <div class="row">
+              <div class="col-md-6 mb-3">
+                <div class="form-floating">
+                  <textarea class="form-control" id="terms" style="height: 130px">robot</textarea>
+                  <label for="terms">Search terms</label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-floating  mb-3">
+                  <input type="text" class="form-control" id="startDate" value="9-1-2021">
+                  <label for="startDate">Start date</label>
+                </div>
+                <div class="form-floating">
+                  <input type="text" class="form-control" id="endDate" value="10-26-2021">
+                  <label for="endDate">End date</label>
+                </div>
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-md-3 offset-md-9">
+              <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+          </div>
+        </form>
+      </div>
 
-      <div class="results">
+      <div class="container resultsWrapper">
         <div class="row">
-          <div class="col-md-12">
-            <div id="count-over-time">
+          <div class="col-md-12 mt-3 mb-3">
+            <div id="results-count-over-time">
               <!-- count over time results will show up here -->
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 mt-3 mb-3">
+            <div id="results-count">
+              <!-- total count results will show up here -->
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 mt-3 mb-3">
+            <div id="results-sample">
+              <!-- sample of content results will show up here -->
             </div>
           </div>
         </div>
       </div>
 
-      <footer class="mt-3">
+    <footer class="mt-3">
+      <div class="container">
         <div class="row">
         </div>
-      </footer>
+      </div>
+    </footer>
 
-    </div>
   </div>
   <script src="{{  url_for('static', filename='scripts/vl-init.js') }}" type="text/javascript"></script>
   <script src="{{  url_for('static', filename='scripts/glimpse.js') }}" type="text/javascript"></script>

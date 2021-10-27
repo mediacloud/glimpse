@@ -1,4 +1,9 @@
 
+function downloadCsv() {
+  const params = getSearchParams();
+  window.location = `/api/count-over-time.csv?${new URLSearchParams(params).toString()}`;
+}
+
 function submitSearch() {
   fetchAndRender('/api/count-over-time.json', 'results-count-over-time', renderCountOverTime);
   fetchAndRender('/api/count.json', 'results-count',

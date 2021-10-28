@@ -44,7 +44,6 @@ class YouTubeYouTubeProvider(ContentProvider):
             total = "> 1000000"
         return total
 
-
     def sample(self, query: str, start_date: dt.datetime, end_date: dt.datetime, limit: int = 20,
                **kwargs) -> List[Dict]:
         """

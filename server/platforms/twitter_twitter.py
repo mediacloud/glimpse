@@ -66,7 +66,7 @@ class TwitterTwitterProvider(ContentProvider):
         data = []
         for d in results['data']:
             data.append({
-                'date': dateparser.parse(d['start']).strftime(MC_DATE_FORMAT),
+                'date': dateparser.parse(d['start']),
                 'timestamp': dateparser.parse(d['start']).timestamp(),
                 'count': d['tweet_count'],
             })

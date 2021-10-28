@@ -67,7 +67,7 @@ class RedditPushshiftProvider(ContentProvider):
         results = []
         for d in data['metadata']['es']['aggregations']['calendar_histogram']['buckets']:
             results.append({
-                'date': dt.datetime.fromtimestamp(d['key']/1000).strftime(MC_DATE_FORMAT),
+                'date': dt.datetime.fromtimestamp(d['key']/1000),
                 'timestamp': d['key']/1000,
                 'count': d['doc_count'],
             })

@@ -5,7 +5,7 @@ from server import YOUTUBE_API_KEY, TWITTER_API_BEARER_TOKEN
 from server.platforms.provider import ContentProvider
 from server.platforms.reddit_pushshift import RedditPushshiftProvider
 from server.platforms.twitter_twitter import TwitterTwitterProvider
-#from server.platforms.youtube_youtube import YouTubeYouTubeProvider
+from server.platforms.youtube_youtube import YouTubeYouTubeProvider
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +24,7 @@ def available_platforms() -> List[str]:
     return [
         PLATFORM_TWITTER + " / " + PLATFORM_SOURCE_TWITTER,
         PLATFORM_REDDIT + " / " + PLATFORM_SOURCE_PUSHSHIFT,
-        #PLATFORM_TWITTER+" / "+PLATFORM_SOURCE_PUSHSHIFT,
-        #PLATFORM_TWITTER + " / " + PLATFORM_SOURCE_BRANDWATCH,
-        #PLATFORM_YOUTUBE + " / " + PLATFORM_SOURCE_YOUTUBE,
+        PLATFORM_YOUTUBE + " / " + PLATFORM_SOURCE_YOUTUBE,
     ]
 
 
@@ -42,8 +40,8 @@ def provider_for(platform: str, source: str) -> ContentProvider:
         platform_provider = TwitterTwitterProvider(TWITTER_API_BEARER_TOKEN)
     elif (platform == PLATFORM_REDDIT) and (source == PLATFORM_SOURCE_PUSHSHIFT):
         platform_provider = RedditPushshiftProvider()
-    #elif (platform == PLATFORM_YOUTUBE) and (source == PLATFORM_SOURCE_YOUTUBE):
-    #    platform_provider = YouTubeYouTubeProvider(YOUTUBE_API_KEY)
+    elif (platform == PLATFORM_YOUTUBE) and (source == PLATFORM_SOURCE_YOUTUBE):
+        platform_provider = YouTubeYouTubeProvider(YOUTUBE_API_KEY)
     else:
         raise UnknownProviderException(platform, source)
     return platform_provider

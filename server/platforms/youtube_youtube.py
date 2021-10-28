@@ -2,15 +2,21 @@ import datetime as dt
 from typing import List, Dict
 import logging
 import dateutil.parser
+import requests
 
 from server.util.cache import cache
 from server.platforms.provider import ContentProvider, MC_DATE_FORMAT
-import requests
 
 # 2014-09-21T00:00:00Z
 YT_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 YT_SEARCH_API_URL = 'https://www.googleapis.com/youtube/v3/search'
+
+#YT_SEARCH_API_URL = 'https://content-youtube.googleapis.com/youtube/v3/search'
+YT_SEARCH_HEADERS = {
+    "x-origin": "https://explorer.apis.google.com",
+    "x-referer": "https://explorer.apis.google.com",
+}
 
 
 class YouTubeYouTubeProvider(ContentProvider):
@@ -33,7 +39,11 @@ class YouTubeYouTubeProvider(ContentProvider):
         :return:
         """
         results = self._fetch_results_from_api(query, start_date, end_date)
-        return results['pageInfo']['totalResults']
+        total = results['pageInfo']['totalResults']
+        if total == 1000000:
+            total = "> 1000000"
+        return total
+
 
     def sample(self, query: str, start_date: dt.datetime, end_date: dt.datetime, limit: int = 20,
                **kwargs) -> List[Dict]:
@@ -45,7 +55,7 @@ class YouTubeYouTubeProvider(ContentProvider):
         :param kwargs:
         :return:
         """
-        results = self._fetch_results_from_api(query, start_date, end_date, limit)
+        results = self._fetch_results_from_api(query, start_date, end_date, limit, order="viewCount")
         # make sure we pull out only the videos (even through we requested only videos
         videos = []
         for search_result in results['items']:
@@ -67,7 +77,7 @@ class YouTubeYouTubeProvider(ContentProvider):
             'stories_id': item['id']['videoId'],
             'author': item['snippet']['channelTitle'],
             'publish_date': publish_date,
-            'title': item['snippet']['title'],
+            'content': item['snippet']['title'],
             'media_name': item['snippet']['channelTitle'],
             'media_url': "https://www.youtube.com/channel/{}".format(item['snippet']['channelId']),
             'url': "https://www.youtube.com/watch?v={}".format(item['id']['videoId'])
@@ -87,5 +97,5 @@ class YouTubeYouTubeProvider(ContentProvider):
             'order': order,
             'pageToken': page_token,
         }
-        response = requests.get(YT_SEARCH_API_URL, params=params)
+        response = requests.get(YT_SEARCH_API_URL, headers=YT_SEARCH_HEADERS, params=params)
         return response.json()

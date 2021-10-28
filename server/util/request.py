@@ -96,9 +96,8 @@ def api_error_handler(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except MCException as e:
-            logger.exception(e)
-            return json_error_response(e.message, e.status_code)
+        except Exception as e:
+            return json_error_response(str(e))
     return wrapper
 
 

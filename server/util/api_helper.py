@@ -36,7 +36,7 @@ def combined_split_and_normalized_counts(matching_results, total_results):
     counts = []
     for day in total_results:
         day_info = {
-            'date': _trim_solr_date(day['date']),
+            'date': day['date'],
             'total_count': day['count']
         }
         matching = [d for d in matching_results if d['date'] == day['date']]

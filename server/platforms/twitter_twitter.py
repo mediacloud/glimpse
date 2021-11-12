@@ -40,12 +40,17 @@ class TwitterTwitterProvider(ContentProvider):
         return TwitterTwitterProvider._tweets_to_rows(results)
 
     def count(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> int:
-        over_time = self.count_over_time(query, start_date, end_date, **kwargs)
-        total = sum([d['count'] for d in over_time['counts']])
-        return total
+        params = dict(
+            query=query,
+            granularity='day',
+            start_time=start_date.isoformat("T") + "Z",
+            end_time=end_date.isoformat("T") + "Z",
+        )
+        results = self._cached_query("tweets/counts/all", params)
+        return results['meta']['total_tweet_count']
 
     def count_over_time(self, query: str, start_date: dt.datetime,
-                        end_date: dt.datetime, #ignored
+                        end_date: dt.datetime,
                         **kwargs) -> Dict:
         """
         Count how many tweets match the query over the 31 days before end_date.
@@ -55,22 +60,33 @@ class TwitterTwitterProvider(ContentProvider):
         :param kwargs:
         :return:
         """
-        #  attenion over last 30 days
         params = dict(
             query=query,
             granularity='day',
             start_time=start_date.isoformat("T") + "Z",
             end_time=end_date.isoformat("T") + "Z",
         )
-        results = self._cached_query("tweets/counts/all", params)
+        more_data = True
+        next_token = None
         data = []
-        for d in results['data']:
-            data.append({
+        while more_data:
+            params['next_token'] = next_token
+            results = self._cached_query("tweets/counts/all", params)
+            data += reversed(results['data'])
+            if ('meta' in results) and ('next_token' in results['meta']):
+                next_token = results['meta']['next_token']
+                more_data = True
+            else:
+                next_token = None
+                more_data = False
+        to_return = []
+        for d in data:
+            to_return.append({
                 'date': dateparser.parse(d['start']),
                 'timestamp': dateparser.parse(d['start']).timestamp(),
                 'count': d['tweet_count'],
             })
-        return {'counts': data}
+        return {'counts': to_return}
 
     @cache.cache_on_arguments()
     def _cached_query(self, endpoint: str, params: Dict = None) -> Dict:

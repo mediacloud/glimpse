@@ -29,7 +29,7 @@ class YouTubeYouTubeProviderTest(unittest.TestCase):
             start_date=dt.datetime.now() - dt.timedelta(days=DAY_WINDOW),
             end_date=dt.datetime.now()
         )
-        assert results > 0
+        assert (results == "> 1000000") or (results > 0)
 
     def test_sample(self):
         results = self._provider.sample(

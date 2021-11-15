@@ -66,6 +66,15 @@ def api_count_over_time_csv():
     return output
 
 
+@app.route('/api/normalized-count-over-time.json', methods=['POST'])
+@api_error_handler
+def api_normalized_count_over_time():
+    query = _parse_query()
+    provider = platforms.provider_for(query['platform'], query['platform_source'])
+    results = provider.normalized_count_over_time(query['terms'], query['start_date'], query['end_date'])
+    return jsonify(results)
+
+
 @app.route('/api/count.json', methods=['POST'])
 @api_error_handler
 def api_count():

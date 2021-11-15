@@ -4,7 +4,7 @@ import unittest
 import datetime as dt
 
 from server import YOUTUBE_API_KEY
-from server.platforms.youtube_youtube import YouTubeYouTubeProvider
+from server.platforms.youtube import YouTubeYouTubeProvider
 
 TERM = "robot"
 DAY_WINDOW = 100  # window in days to search for tem

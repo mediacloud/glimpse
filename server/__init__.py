@@ -27,6 +27,7 @@ CACHE_REDIS_URL = os.environ.get('CACHE_REDIS_URL', None)
 SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY', None)
 TWITTER_API_BEARER_TOKEN = os.environ.get('TWITTER_API_BEARER_TOKEN', None)
+MEDIA_CLOUD_API_KEY = os.environ.get('MEDIA_CLOUD_API_KEY', None)
 
 # setup optional sentry logging service
 if SENTRY_DSN is not None:
@@ -35,10 +36,6 @@ if SENTRY_DSN is not None:
     setup_logging(sentry_handler)
 else:
     logger.info("no sentry logging")
-
-
-mc = mediacloud.api.AdminMediaCloud(MC_API_KEY)
-logger.info("Connected to mediacloud")
 
 
 def create_app():

@@ -2,7 +2,7 @@ import unittest
 import datetime as dt
 
 from server import TWITTER_API_BEARER_TOKEN
-from server.platforms.twitter_twitter import TwitterTwitterProvider
+from server.platforms.twitter import TwitterTwitterProvider
 
 TERM = "robots"
 

@@ -6,7 +6,6 @@ import logging
 
 from server.platforms.provider import ContentProvider, MC_DATE_FORMAT
 from server.util.cache import cache
-from server.util.dates import unix_to_solr_date
 
 REDDIT_PUSHSHIFT_URL = "https://beta.pushshift.io"
 SUBMISSION_SEARCH_URL = "{}/reddit/search/submissions".format(REDDIT_PUSHSHIFT_URL)
@@ -129,4 +128,6 @@ class RedditPushshiftProvider(ContentProvider):
         """
         return url.split('?')[0]
 
+    def _everything_query(self) -> str:
+        return ''
 

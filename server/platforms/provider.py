@@ -7,7 +7,7 @@ from server.util.api_helper import combined_split_and_normalized_counts
 MC_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
-class ContentProvider():
+class ContentProvider:
     """
     An abstract wrapper to be implemented for each platform we want to preview content from.
     Any unimplemented methods raise an Exception
@@ -30,9 +30,6 @@ class ContentProvider():
               **kwargs) -> List[Dict]:
         raise NotImplementedError("Subclasses should implement words!")
 
-    def tags(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> List[Dict]:
-        raise NotImplementedError("Subclasses should implement tag_use!")
-
     def normalized_count_over_time(self, query: str, start_date: dt.datetime, end_date: dt.datetime,
                                    **kwargs) -> Dict:
         """
@@ -45,10 +42,16 @@ class ContentProvider():
         """
         matching_content_counts = self.count_over_time(query, start_date, end_date, **kwargs)['counts']
         matching_total = sum([d['count'] for d in matching_content_counts])
-        no_query_content_counts = self.count_over_time('', start_date, end_date, **kwargs)['counts']
+        no_query_content_counts = self.count_over_time(self._everything_query(), start_date, end_date, **kwargs)['counts']
         no_query_total = sum([d['count'] for d in no_query_content_counts])
         return {
             'counts': combined_split_and_normalized_counts(matching_content_counts, no_query_content_counts),
             'total': matching_total,
             'normalized_total': no_query_total,
         }
+
+    def _everything_query(self) -> str:
+        """
+        :return: a query string that can be used to capture matching "everything" 
+        """
+        return '*'

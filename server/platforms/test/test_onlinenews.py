@@ -1,13 +1,14 @@
 import unittest
 import datetime as dt
 
-from server.platforms.reddit_pushshift import RedditPushshiftProvider
+from server.platforms.onlinenews import OnlineNewsMediaCloudProvider
+from server import MEDIA_CLOUD_API_KEY
 
 
-class RedditPushshiftProviderTest(unittest.TestCase):
+class OnlineNewsMediaCloudProviderTest(unittest.TestCase):
 
     def setUp(self):
-        self._provider = RedditPushshiftProvider()
+        self._provider = OnlineNewsMediaCloudProvider(MEDIA_CLOUD_API_KEY)
 
     def test_count(self):
         results = self._provider.count("Trump", dt.datetime.strptime("2019-01-01", "%Y-%m-%d"),
@@ -17,10 +18,8 @@ class RedditPushshiftProviderTest(unittest.TestCase):
     def test_sample(self):
         results = self._provider.sample("Trump", dt.datetime.strptime("2019-01-01", "%Y-%m-%d"),
                                         dt.datetime.strptime("2019-02-01", "%Y-%m-%d"))
-        last_score = 9999999999999
         for post in results:
-            assert last_score >= post['score']
-            last_score = post['score']
+            assert 'url' in post
 
     def test_count_over_time(self):
         results = self._provider.count_over_time("Trump", dt.datetime.strptime("2019-01-01", "%Y-%m-%d"),

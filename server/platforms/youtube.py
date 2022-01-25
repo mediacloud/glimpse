@@ -6,6 +6,7 @@ import requests
 
 from server.util.cache import cache
 from server.platforms.provider import ContentProvider, MC_DATE_FORMAT
+from server.platforms.exceptions import UnsupportedOperationException
 
 # 2014-09-21T00:00:00Z
 YT_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -28,6 +29,9 @@ class YouTubeYouTubeProvider(ContentProvider):
         super(YouTubeYouTubeProvider, self).__init__()
         self._logger = logging.getLogger(__name__)
         self._api_key = api_key
+
+    def count_over_time(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> Dict:
+        raise UnsupportedOperationException("Can't search youtube for videos poseted over time")
 
     def count(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> int:
         """

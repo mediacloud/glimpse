@@ -4,8 +4,10 @@ import dateparser
 from typing import List, Dict
 import logging
 
-from server.platforms.provider import ContentProvider, MC_DATE_FORMAT
+from server.platforms.provider import ContentProvider
 from server.util.cache import cache
+from server.platforms.exceptions import UnsupportedOperationException
+
 
 TWITTER_API_URL = 'https://api.twitter.com/2/'
 
@@ -133,3 +135,7 @@ class TwitterTwitterProvider(ContentProvider):
             'like_count': item['public_metrics']['like_count'],
             'quote_count': item['public_metrics']['quote_count'],
         }
+
+    def normalized_count_over_time(self, query: str, start_date: dt.datetime, end_date: dt.datetime,
+                                   **kwargs) -> Dict:
+        raise UnsupportedOperationException("Can't search twitter for all tweets in a timeframe")

@@ -17,8 +17,8 @@ This was a weekend project created to support teaching in a Digital Storytelling
 it would make more sense to:
 * implement a uniform "simple query" mode, so first-time users don't need to learn the query syntax specific to each 
 platform
-* try to determine a demoniator so we can show percentage of attention over time for each platform in one chart
-* support filtering content by platform (ie. channels on Reddit, collectons of media sources for online news, etc)
+* try to determine a denominator so we can show percentage of attention over time for each platform in one chart
+* support filtering content by platform (ie. channels on Reddit, collections of media sources for online news, etc)
 * add support for more platforms via their APIs
 
 ## Installing
@@ -26,12 +26,21 @@ platform
 This requires installing redis (for caching results). Then:
 
 ```
-pip3 install -r requirements
-pip3 install click --upgrade
-python3 -m spacy download en_core_web_sm
+pip3 install -r requirements.txt
 ```
 
-## Deploying to Dokku
+## Running
+
+You can run this locally for development by creating and filling in a `.env` file based on the `.env.template`.  
+
+### Running in Docker
+
+```
+docker image build -t glimpse .
+docker container run --rm -it -p 8000:8000 -e MC_API_KEY=keykeykey -e CACHE_REDIS_URL=urlurlurl -e TWITTER_API_BEARER_TOKEN=tokentoken -e YOUTUBE_API_KEY=keykey glimpse
+```
+
+### Deploying to Dokku
 
 1. `dokku apps:create glimpse`
 2. `dokku redis:create glimpse-cache`
@@ -42,6 +51,6 @@ python3 -m spacy download en_core_web_sm
 
 ## Credits
 
-Created by Rahul Bhargava, Assistant Professor of Journalism and Art + Design at Northeasern University.
+Created by Rahul Bhargava, Assistant Professor of Journalism and Art + Design at Northeastern University.
 * [Data Culture Group](https://dataculturegroup.org)
 * [Media Cloud](https://mediacloud.org)

@@ -40,6 +40,14 @@ python3 -m spacy download en_core_web_sm
 5. `dokku config:set --no-restart glimpse DOKKU_LETSENCRYPT_EMAIL=emailaddress`
 6. `dokku ps:scale glimpse web=6`
 
+## Running in Docker
+
+```
+docker image build -t glimpse .
+
+docker container run --rm -it -p 8000:8000 -e MC_API_KEY=keykeykey -e CACHE_REDIS_URL=urlurlurl -e TWITTER_API_BEARER_TOKEN=tokentoken -e YOUTUBE_API_KEY=keykey glimpse
+```
+
 ## Credits
 
 Created by Rahul Bhargava, Assistant Professor of Journalism and Art + Design at Northeasern University.

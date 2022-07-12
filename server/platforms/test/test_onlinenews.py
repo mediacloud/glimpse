@@ -65,6 +65,20 @@ class OnlineNewsWaybackMachineProviderTest(unittest.TestCase):
             assert 'count' in item
             assert item['count'] > 0
 
+    def test_language_clause(self):
+        start_date = dt.datetime.strptime("2019-01-01", "%Y-%m-%d")
+        end_date = dt.datetime.strptime("2021-01-01", "%Y-%m-%d")
+        en_results = self._provider.count("COVID19 and language:en", start_date, end_date)
+        assert en_results > 0
+        en_results = self._provider.sample("COVID19 and language:en", start_date, end_date)
+        for s in en_results:
+            assert s['language'] == 'en'
+        es_results = self._provider.count("COVID-19 and language:es", start_date, end_date)
+        assert es_results > 0
+        es_results = self._provider.sample("COVID19 and language:es", start_date, end_date)
+        for s in es_results:
+            assert s['language'] == 'es'
+
     def test_sample(self):
         results = self._provider.sample("coronavirus", dt.datetime.strptime("2019-01-01", "%Y-%m-%d"),
                                         dt.datetime.strptime("2019-02-01", "%Y-%m-%d"))

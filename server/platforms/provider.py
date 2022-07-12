@@ -26,6 +26,9 @@ class ContentProvider:
     def count_over_time(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> Dict:
         raise NotImplementedError("Subclasses should implement count_over_time!")
 
+    def item(self, item_id: str) -> Dict:
+        raise NotImplementedError("Subclasses should implement count_over_time!")
+
     def words(self, query: str, start_date: dt.datetime, end_date: dt.datetime, limit: int = 100,
               **kwargs) -> List[Dict]:
         raise NotImplementedError("Subclasses should implement words!")

@@ -61,6 +61,11 @@ class OnlineNewsMediaCloudProvider(ContentProvider):
         story_count_result = self._mc_client.storyCount(q, fq, split=True)
         return story_count_result
 
+    #@cache.cache_on_arguments()
+    def item(self, item_id: str) -> Dict:
+        story = self._mc_client.story(item_id)
+        return story
+
     @cache.cache_on_arguments()
     def words(self, query: str, start_date: dt.datetime, end_date: dt.datetime, limit: int = 100,
               **kwargs) -> List[Dict]:
@@ -152,20 +157,17 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
 
     def _overview_query(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> Dict:
         params = {
-            "q": "{}".format(query)
+            "q": "{}".format(query),
         }
         results = self._query("search/overview", params)
         return results
 
+    def item(self, item_id: str) -> Dict:
+        results = self._query("article/{}".format(item_id))
+        return results
+
     @cache.cache_on_arguments()
     def _query(self, endpoint: str, params: Dict = None) -> Dict:
-        """
-        Run a generic query agains the Twitter historical search API
-        :param endpoint:
-        :param query:
-        :param params:
-        :return:
-        """
         endpoint_url = self.API_BASE_URL+endpoint
         r = requests.get(endpoint_url, params=params)
         return r.json()

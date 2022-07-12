@@ -75,8 +75,8 @@ function renderSample(destinationId, data) {
   const rows = data.map(d => `
     <tr>
       <td>${d['publish_date']}</td>
-      <td>${d['author']}</td>
-      <td>${d['content']}</td>
+      <td>${d['author'] || "?"}</td>
+      <td>${d['content'] || d['title']}</td>
       <td><a href="${d['url']}">${d['media_name']}</a></td>
     </tr>
   `);

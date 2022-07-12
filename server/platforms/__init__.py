@@ -1,12 +1,14 @@
 import logging
 from typing import List
+import os
+from pathlib import Path
 
-from server import YOUTUBE_API_KEY, TWITTER_API_BEARER_TOKEN, MEDIA_CLOUD_API_KEY
-from server.platforms.provider import ContentProvider
-from server.platforms.reddit import RedditPushshiftProvider
-from server.platforms.twitter import TwitterTwitterProvider
-from server.platforms.youtube import YouTubeYouTubeProvider
-from server.platforms.onlinenews import OnlineNewsMediaCloudProvider
+from .. import YOUTUBE_API_KEY, TWITTER_API_BEARER_TOKEN, MEDIA_CLOUD_API_KEY
+from .provider import ContentProvider
+from .reddit import RedditPushshiftProvider
+from .twitter import TwitterTwitterProvider
+from .youtube import YouTubeYouTubeProvider
+from .onlinenews import OnlineNewsMediaCloudProvider, OnlineNewsWaybackMachineProvider
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +23,7 @@ PLATFORM_SOURCE_PUSHSHIFT = 'pushshift'
 PLATFORM_SOURCE_TWITTER = 'twitter'
 PLATFORM_SOURCE_YOUTUBE = 'youtube'
 PLATFORM_SOURCE_MEDIA_CLOUD = 'mediacloud'
+PLATFORM_SOURCE_WAYBACK_MACHINE = 'waybackmachine'
 
 
 def available_platforms() -> List[str]:
@@ -29,6 +32,7 @@ def available_platforms() -> List[str]:
         PLATFORM_REDDIT + " / " + PLATFORM_SOURCE_PUSHSHIFT,
         PLATFORM_YOUTUBE + " / " + PLATFORM_SOURCE_YOUTUBE,
         PLATFORM_ONLINE_NEWS + " / " + PLATFORM_SOURCE_MEDIA_CLOUD,
+        PLATFORM_ONLINE_NEWS + " / " + PLATFORM_SOURCE_WAYBACK_MACHINE,
     ]
 
 
@@ -48,6 +52,8 @@ def provider_for(platform: str, source: str) -> ContentProvider:
         platform_provider = YouTubeYouTubeProvider(YOUTUBE_API_KEY)
     elif (platform == PLATFORM_ONLINE_NEWS) and (source == PLATFORM_SOURCE_MEDIA_CLOUD):
         platform_provider = OnlineNewsMediaCloudProvider(MEDIA_CLOUD_API_KEY)
+    elif (platform == PLATFORM_ONLINE_NEWS) and (source == PLATFORM_SOURCE_WAYBACK_MACHINE):
+        platform_provider = OnlineNewsWaybackMachineProvider()
     else:
         raise UnknownProviderException(platform, source)
     return platform_provider

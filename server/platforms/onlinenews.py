@@ -1,5 +1,7 @@
 import datetime as dt
 from typing import List, Dict
+import dateparser
+import requests
 import logging
 from mediacloud.api import MediaCloud
 
@@ -15,7 +17,7 @@ class OnlineNewsMediaCloudProvider(ContentProvider):
         self._api_key = api_key
         self._mc_client = MediaCloud(api_key)
 
-    #@cache.cache_on_arguments()
+    @cache.cache_on_arguments()
     def sample(self, query: str, start_date: dt.datetime, end_date: dt.datetime, limit: int = 20,
                **kwargs) -> List[Dict]:
         """
@@ -31,7 +33,7 @@ class OnlineNewsMediaCloudProvider(ContentProvider):
         story_list = self._mc_client.storyList(q, fq, rows=limit, **kwargs)
         return story_list
 
-    #@cache.cache_on_arguments()
+    @cache.cache_on_arguments()
     def count(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> int:
         """
         Count how many verified tweets match the query.
@@ -45,7 +47,7 @@ class OnlineNewsMediaCloudProvider(ContentProvider):
         story_count_result = self._mc_client.storyCount(q, fq, **kwargs)
         return story_count_result['count']
 
-    #@cache.cache_on_arguments()
+    @cache.cache_on_arguments()
     def count_over_time(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> List[Dict]:
         """
         How many verified tweets over time match the query.
@@ -59,7 +61,7 @@ class OnlineNewsMediaCloudProvider(ContentProvider):
         story_count_result = self._mc_client.storyCount(q, fq, split=True)
         return story_count_result
 
-    #@cache.cache_on_arguments()
+    @cache.cache_on_arguments()
     def words(self, query: str, start_date: dt.datetime, end_date: dt.datetime, limit: int = 100,
               **kwargs) -> List[Dict]:
         """
@@ -75,7 +77,7 @@ class OnlineNewsMediaCloudProvider(ContentProvider):
         top_words = self._mc_client.wordCount(q, fq, **kwargs)[:limit]
         return top_words
 
-    #@cache.cache_on_arguments()
+    @cache.cache_on_arguments()
     def tags(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> List[Dict]:
         q, fq = self._format_query(query, start_date, end_date, **kwargs)
         tags_sets_id = kwargs.get('tags_sets_id', None)
@@ -117,3 +119,69 @@ class OnlineNewsMediaCloudProvider(ContentProvider):
             if len(clauses) > 0:
                 query += " AND ({})".format(" OR ".join(clauses))
         return query
+
+
+class OnlineNewsWaybackMachineProvider(ContentProvider):
+
+    API_BASE_URL = "http://mcapi.sawood-dev.us.archive.org:8000/v1/"
+
+    def __init__(self):
+        super(OnlineNewsWaybackMachineProvider, self).__init__()
+        self._logger = logging.getLogger(__name__)
+
+    def sample(self, query: str, start_date: dt.datetime, end_date: dt.datetime, limit: int = 20,
+               **kwargs) -> List[Dict]:
+        results = self._overview_query(query, start_date, end_date, **kwargs)
+        return self._matches_to_rows(results['matches'])
+
+    def count(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> int:
+        results = self._overview_query(query, start_date, end_date, **kwargs)
+        return results['total']
+
+    def count_over_time(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> Dict:
+        results = self._overview_query(query, start_date, end_date, **kwargs)
+        data = results['dailycounts']
+        to_return = []
+        for day_date, day_value in data.items():
+            to_return.append({
+                'date': dateparser.parse(day_date),
+                'timestamp': dateparser.parse(day_date).timestamp(),
+                'count': day_value,
+            })
+        return {'counts': to_return}
+
+    def _overview_query(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> Dict:
+        params = {
+            "q": "{}".format(query)
+        }
+        results = self._query("search/overview", params)
+        return results
+
+    @cache.cache_on_arguments()
+    def _query(self, endpoint: str, params: Dict = None) -> Dict:
+        """
+        Run a generic query agains the Twitter historical search API
+        :param endpoint:
+        :param query:
+        :param params:
+        :return:
+        """
+        endpoint_url = self.API_BASE_URL+endpoint
+        r = requests.get(endpoint_url, params=params)
+        return r.json()
+
+    @classmethod
+    def _matches_to_rows(cls, matches: List) -> List:
+        return [OnlineNewsWaybackMachineProvider._match_to_row(m) for m in matches]
+
+    @classmethod
+    def _match_to_row(cls, match: Dict) -> Dict:
+        return {
+            'media_name': match['canonical_domain'],
+            'media_url': "http://"+match['canonical_domain'],
+            'stories_id': match['article_url'].split("/")[-1],
+            'title': match['article_title'],
+            'publish_date': dateparser.parse(match['publication_date']),
+            'url': match['original_url'],
+            'language': match['language'],
+        }

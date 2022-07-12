@@ -45,7 +45,7 @@ docker container run --rm -it -p 8000:8000 -e MC_API_KEY=keykeykey -e CACHE_REDI
 1. `dokku apps:create glimpse`
 2. `dokku redis:create glimpse-cache`
 3. `dokku redis:link glimpse-cache glimpse`
-4. `dokku config:set glimpse MC_API_KEY=keykeykey CACHE_REDIS_URL=urlurlurl TWITTER_API_BEARER_TOKEN=tokentoken YOUTUBE_API_KEY=keykey`
+4. `dokku config:set glimpse MEDIA_CLOUD_API_KEY=keykeykey CACHE_REDIS_URL=urlurlurl TWITTER_API_BEARER_TOKEN=tokentoken YOUTUBE_API_KEY=keykey`
 5. `dokku config:set --no-restart glimpse DOKKU_LETSENCRYPT_EMAIL=emailaddress`
 6. `dokku ps:scale glimpse web=6`
 

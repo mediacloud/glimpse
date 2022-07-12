@@ -155,9 +155,13 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
             })
         return {'counts': to_return}
 
+    @staticmethod
+    def _date_query_clause(start_date: dt.datetime, end_date: dt.datetime) -> str:
+        return "publication_date:[{} TO {}]".format(start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
+
     def _overview_query(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> Dict:
         params = {
-            "q": "{}".format(query),
+            "q": "{} AND {}".format(query, self._date_query_clause(start_date, end_date))
         }
         results = self._query("search/overview", params)
         return results

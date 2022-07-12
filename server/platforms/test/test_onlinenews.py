@@ -76,7 +76,7 @@ class OnlineNewsWaybackMachineProviderTest(unittest.TestCase):
             assert 'title' in r
             assert len(r['title']) > 0
             assert 'publish_date' in r
-            assert r['publish_date'].year > 2000
+            assert r['publish_date'].year == 2019
 
     def test_item(self):
         STORY_ID = "Y29tLGV0dXJib25ld3Msc3EpLzU2Nzc5Mi90aGUtbGlnaHQtYXQtdGhlLWVuZC1vZi10aGUtY292aWQtMTktdHVubmVs"

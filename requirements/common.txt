@@ -1,11 +1,10 @@
-Flask==2.0.2
-mediacloud==3.12.5
-requests==2.27.1
+Flask==2.1.*
+mediacloud==3.13.*
 raven[flask]==6.10.0
-redis==4.1.1
-gunicorn==20.1.0
-dogpile.cache==0.7.1  # upgrading dogpile.cache caused problems - leave it on this version
-python-dotenv==0.19.2
-python-dateutil==2.8.2
-dateparser==1.1.0
-gevent==21.12.0
+redis==4.3.*
+gunicorn==20.1.*
+dogpile.cache==0.7.*  # upgrading dogpile.cache caused problems - leave it on this version
+python-dotenv==0.20.*
+python-dateutil==2.8.*
+dateparser==1.1.*
+gevent==21.12.*

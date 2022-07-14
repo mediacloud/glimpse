@@ -33,6 +33,11 @@ class ContentProvider:
               **kwargs) -> List[Dict]:
         raise NotImplementedError("Subclasses should implement words!")
 
+    def all_items(self, query: str, start_date: dt.datetime, end_date: dt.datetime, page_size: int = 1000,
+                  **kwargs):
+        # yields a page of items
+        raise NotImplementedError("Subclasses should implement words!")
+
     def normalized_count_over_time(self, query: str, start_date: dt.datetime, end_date: dt.datetime,
                                    **kwargs) -> Dict:
         """

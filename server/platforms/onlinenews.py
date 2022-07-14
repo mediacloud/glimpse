@@ -4,6 +4,7 @@ import dateparser
 import requests
 import logging
 from mediacloud.api import MediaCloud
+from urllib.parse import urlparse, parse_qs
 
 from server.platforms.provider import ContentProvider
 from server.util.cache import cache
@@ -137,14 +138,24 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
     def sample(self, query: str, start_date: dt.datetime, end_date: dt.datetime, limit: int = 20,
                **kwargs) -> List[Dict]:
         results = self._overview_query(query, start_date, end_date, **kwargs)
+        if self._is_no_results(results):
+            return []
         return self._matches_to_rows(results['matches'])
+
+    @staticmethod
+    def _is_no_results(results: Dict) -> bool:
+        return ('matches' not in results) and ('detail' in results) and (results['detail'] == 'No results found!')
 
     def count(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> int:
         results = self._overview_query(query, start_date, end_date, **kwargs)
+        if self._is_no_results(results):
+            return 0
         return results['total']
 
     def count_over_time(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> Dict:
         results = self._overview_query(query, start_date, end_date, **kwargs)
+        if self._is_no_results(results):
+            return {}
         data = results['dailycounts']
         to_return = []
         for day_date, day_value in data.items():
@@ -160,21 +171,44 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
         return "publication_date:[{} TO {}]".format(start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
 
     def _overview_query(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> Dict:
-        params = {
-            "q": "{} AND {}".format(query, self._date_query_clause(start_date, end_date))
-        }
-        results = self._query("search/overview", params)
+        params = {"q": "{} AND {}".format(query, self._date_query_clause(start_date, end_date))}
+        results, _ = self._query("search/overview", params, method='POST')
         return results
 
     def item(self, item_id: str) -> Dict:
-        results = self._query("article/{}".format(item_id))
+        results, _ = self._query("article/{}".format(item_id), method='GET')
         return results
 
-    @cache.cache_on_arguments()
-    def _query(self, endpoint: str, params: Dict = None) -> Dict:
+    def all_items(self, query: str, start_date: dt.datetime, end_date: dt.datetime, page_size: int = 1000,
+                  **kwargs):
+        params = {"q": "{} AND {}".format(query, self._date_query_clause(start_date, end_date))}
+        more_pages = True
+        while more_pages:
+            page, response = self._query("search/result", params, method='POST')
+            yield page
+            # check if there is a link to the next page
+            more_pages = False
+            next_link = response.headers.get('link')
+            if next_link:
+                parts = next_link.split(";")
+                if parts[1].strip() == 'rel="next"':
+                    next_url = parts[0][1:-1]
+                    parsed_url = urlparse(next_url)
+                    resume_param = parse_qs(parsed_url.query)['resume'][0]
+                    params['resume'] = resume_param
+                    more_pages = True
+
+
+    #@cache.cache_on_arguments()
+    def _query(self, endpoint: str, params: Dict = None, method: str = 'GET'):
         endpoint_url = self.API_BASE_URL+endpoint
-        r = requests.get(endpoint_url, params=params)
-        return r.json()
+        if method == 'GET':
+            r = requests.get(endpoint_url, params)
+        elif method == 'POST':
+            r = requests.post(endpoint_url, json=params)
+        else:
+            raise RuntimeError("Unsupported method of '{}'".format(method))
+        return (r.json(), r)
 
     @classmethod
     def _matches_to_rows(cls, matches: List) -> List:

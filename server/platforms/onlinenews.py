@@ -198,7 +198,6 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
                     params['resume'] = resume_param
                     more_pages = True
 
-
     #@cache.cache_on_arguments()
     def _query(self, endpoint: str, params: Dict = None, method: str = 'GET'):
         endpoint_url = self.API_BASE_URL+endpoint
@@ -208,7 +207,7 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
             r = requests.post(endpoint_url, json=params)
         else:
             raise RuntimeError("Unsupported method of '{}'".format(method))
-        return (r.json(), r)
+        return r.json(), r
 
     @classmethod
     def _matches_to_rows(cls, matches: List) -> List:
@@ -217,11 +216,11 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
     @classmethod
     def _match_to_row(cls, match: Dict) -> Dict:
         return {
-            'media_name': match['canonical_domain'],
-            'media_url': "http://"+match['canonical_domain'],
+            'media_name': match['domain'],
+            'media_url': "http://"+match['domain'],
             'stories_id': match['article_url'].split("/")[-1],
-            'title': match['article_title'],
+            'title': match['title'],
             'publish_date': dateparser.parse(match['publication_date']),
-            'url': match['original_url'],
+            'url': match['url'],
             'language': match['language'],
         }

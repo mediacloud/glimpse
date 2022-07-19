@@ -142,6 +142,24 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
             return []
         return self._matches_to_rows(results['matches'])
 
+    def top_sources(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> List[Dict]:
+        results = self._overview_query(query, start_date, end_date, **kwargs)
+        if self._is_no_results(results):
+            return []
+        return self._dict_to_list(results['topdomains'])
+
+    def top_tlds(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> List[Dict]:
+        results = self._overview_query(query, start_date, end_date, **kwargs)
+        if self._is_no_results(results):
+            return []
+        return self._dict_to_list(results['toptlds'])
+
+    def top_languages(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> List[Dict]:
+        results = self._overview_query(query, start_date, end_date, **kwargs)
+        if self._is_no_results(results):
+            return []
+        return self._dict_to_list(results['toplangs'])
+
     @staticmethod
     def _is_no_results(results: Dict) -> bool:
         return ('matches' not in results) and ('detail' in results) and (results['detail'] == 'No results found!')
@@ -172,7 +190,7 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
 
     def _overview_query(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> Dict:
         params = {"q": "{} AND {}".format(query, self._date_query_clause(start_date, end_date))}
-        results, _ = self._query("search/overview", params, method='POST')
+        results, response = self._query("search/overview", params, method='POST')
         return results
 
     def item(self, item_id: str) -> Dict:
@@ -188,17 +206,12 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
             yield page
             # check if there is a link to the next page
             more_pages = False
-            next_link = response.headers.get('link')
-            if next_link:
-                parts = next_link.split(";")
-                if parts[1].strip() == 'rel="next"':
-                    next_url = parts[0][1:-1]
-                    parsed_url = urlparse(next_url)
-                    resume_param = parse_qs(parsed_url.query)['resume'][0]
-                    params['resume'] = resume_param
-                    more_pages = True
+            next_link_token = response.headers.get('x-resume-token')
+            if next_link_token:
+                params['resume'] = next_link_token
+                more_pages = True
 
-    #@cache.cache_on_arguments()
+    @cache.cache_on_arguments()
     def _query(self, endpoint: str, params: Dict = None, method: str = 'GET'):
         endpoint_url = self.API_BASE_URL+endpoint
         if method == 'GET':
@@ -224,3 +237,7 @@ class OnlineNewsWaybackMachineProvider(ContentProvider):
             'url': match['url'],
             'language': match['language'],
         }
+
+    @classmethod
+    def _dict_to_list(cls, data: Dict) -> List[Dict]:
+        return [{'name': k, 'value': v} for k, v in data.items()]

@@ -44,7 +44,6 @@ class TwitterTwitterProvider(ContentProvider):
     def count(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> int:
         params = dict(
             query=query,
-            granularity='day',
             start_time=start_date.isoformat("T") + "Z",
             end_time=end_date.isoformat("T") + "Z",
         )

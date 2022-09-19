@@ -42,6 +42,9 @@ class TwitterTwitterProvider(ContentProvider):
         return TwitterTwitterProvider._tweets_to_rows(results)
 
     def count(self, query: str, start_date: dt.datetime, end_date: dt.datetime, **kwargs) -> int:
+        # this is returning spurious results, so just use count_over_time since it will probably be called and cached
+        # already
+        """
         params = dict(
             query=query,
             start_time=start_date.isoformat("T") + "Z",
@@ -49,6 +52,8 @@ class TwitterTwitterProvider(ContentProvider):
         )
         results = self._cached_query("tweets/counts/all", params)
         return results['meta']['total_tweet_count']
+        """
+        return self.count_over_time(query, start_date, end_date, **kwargs)['total']
 
     def count_over_time(self, query: str, start_date: dt.datetime,
                         end_date: dt.datetime,
@@ -81,13 +86,15 @@ class TwitterTwitterProvider(ContentProvider):
                 next_token = None
                 more_data = False
         to_return = []
+        total = 0
         for d in data:
             to_return.append({
                 'date': dateparser.parse(d['start']),
                 'timestamp': dateparser.parse(d['start']).timestamp(),
                 'count': d['tweet_count'],
             })
-        return {'counts': to_return}
+            total += d['tweet_count']
+        return dict(counts=to_return, total=total)
 
     @cache.cache_on_arguments()
     def _cached_query(self, endpoint: str, params: Dict = None) -> Dict:
